@@ -4,3 +4,4 @@ gspread
 gspread-pandas
 oauth2client
 Flask
+pip install requests
