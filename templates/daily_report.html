@@ -1,0 +1,56 @@
+<!-- Файл: templates/daily_report.html (финальная версия с двумя типами отчетов) -->
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4>Ежедневный отчет по приросту</h4>
+    </div>
+    <div class="card-body">
+        <!-- Блок с выбором отчета -->
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded">
+            
+            <!-- Кнопки для выбора периода -->
+            <div>
+                <strong>Сводный отчет за период:</strong>
+                <div class="btn-group mt-2" role="group">
+                    <a href="{{ url_for('daily_report', type='period', days='7') }}" class="btn btn-outline-primary {% if report_type == 'period' and active_period == '7' %}active{% endif %}">За 7 дней</a>
+                    <a href="{{ url_for('daily_report', type='period', days='30') }}" class="btn btn-outline-primary {% if report_type == 'period' and active_period == '30' %}active{% endif %}">За 30 дней</a>
+                </div>
+            </div>
+
+            <!-- Разделитель -->
+            <div class="vr mx-4"></div>
+
+            <!-- Форма для выбора конкретной даты -->
+            <div>
+                <strong>Детальный отчет за день:</strong>
+                <form method="get" class="d-flex align-items-center mt-2" id="date-form">
+                    <input type="hidden" name="type" value="daily">
+                    <select name="date" class="form-select" onchange="document.getElementById('date-form').submit()">
+                        <option>Выберите дату...</option>
+                        {% for date in available_dates %}
+                            <option value="{{ date }}" {% if report_type == 'daily' and date == selected_date %}selected{% endif %}>
+                                {{ date }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <h5 class="mt-4">{{ report_title }}</h5>
+        
+        <!-- Отображение таблицы -->
+        {% if report_table and '<tbody>' in report_table %}
+            {% autoescape false %}
+                {{ report_table | safe }}
+            {% endautoescape %}
+        {% else %}
+            <div class="alert alert-warning text-center" role="alert">
+                Нет данных для отображения за выбранный период.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
