@@ -1,0 +1,62 @@
+# Имя нашего workflow, будет отображаться в разделе Actions
+name: Daily Pinterest Stats Collector
+
+# Триггеры для запуска:
+on:
+  # 1. По расписанию (schedule)
+  schedule:
+    # Запускать каждый день в 3:15 ночи по UTC.
+    # Это примерно 6:15 утра по Московскому времени.
+    # Формат: минута час * * *
+    - cron: '15 3 * * *'
+    - cron: '15 15 * * *' # Запуск в 15:15 UTC
+  
+  # 2. Вручную (кнопкой в интерфейсе GitHub)
+  workflow_dispatch:
+
+# Описание задач, которые нужно выполнить
+jobs:
+  build:
+    # На какой виртуальной машине запускать (последняя версия Ubuntu)
+    runs-on: ubuntu-latest
+
+    # Шаги выполнения
+    steps:
+      # 1. Шаг: Скачиваем код из нашего репозитория
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # 2. Шаг: Настраиваем Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11' 
+
+      # 3. Шаг: Устанавливаем все библиотеки из requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 4. Шаг: Устанавливаем Playwright и его браузеры
+      - name: Install Playwright Browsers
+        run: playwright install --with-deps
+
+      # 5. Шаг: Создаем файл сессии из секрета GitHub
+      - name: Create Pinterest session file from secret
+        env:
+          PINTEREST_SESSION: ${{ secrets.PINTEREST_SESSION }}
+        run: echo "$PINTEREST_SESSION" > pinterest_session.json
+
+      # 6. Шаг: Запускаем наш главный скрипт парсинга
+      - name: Run Python scraper script
+        run: python pinal.py
+
+      # 7. Шаг: Сохраняем измененную базу данных обратно в репозиторий
+      - name: Commit and push updated database
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add pinterest_stats.db
+          # Проверяем, были ли изменения в файле, и только тогда делаем коммит
+          git diff --staged --quiet || (git commit -m "Update database with latest stats" && git push)
