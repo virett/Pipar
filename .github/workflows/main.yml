@@ -2,12 +2,12 @@
 name: Daily Pinterest Stats Collector
 
 # Триггеры для запуска:
-on:
+#on:
   # 1. По расписанию (schedule)
-  schedule:
+  #schedule:
     # Запуск в 3:15 и 15:15 по UTC (два раза в день)
-    - cron: '15 3 * * *'
-    - cron: '15 15 * * *'
+    #- cron: '15 3 * * *'
+    #- cron: '15 15 * * *'
   
   # 2. Вручную (кнопкой в интерфейсе GitHub)
   workflow_dispatch:
